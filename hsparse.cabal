@@ -1,0 +1,38 @@
+name:                hsparse
+version:             0.1.0.0
+synopsis:            Sparse vector and matrix operations
+description:         Please see README.md
+homepage:            http://github.com/mnick/hsparse#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Maximilian Nickel
+maintainer:          mnick@mit.edu
+copyright:           2016 Maximilian Nickel
+category:            Math
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Numeric.LinearAlgebra.Sparse.Vector
+                     , Numeric.LinearAlgebra.Sparse.Matrix
+  other-modules:       Numeric.LinearAlgebra.Sparse.Internal
+  build-depends:       base >= 4.7 && < 5
+                     , containers >= 0.5
+  default-language:    Haskell2010
+
+test-suite sparse-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , hsparse
+                     , hspec
+                     , QuickCheck >= 2.8
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/mnick/hsparse
