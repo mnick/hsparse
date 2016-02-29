@@ -1,1 +1,4 @@
-#+Title: hsparse
+* hsparse
+**** Haskell library for sparse vector and matrix operations
+
+This library supports operations such as dot products, matrix products between sparse vectors and matrices.
