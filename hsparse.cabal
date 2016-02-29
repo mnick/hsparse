@@ -1,7 +1,7 @@
 name:                hsparse
 version:             0.1.0.0
 synopsis:            Sparse vector and matrix operations
-description:         Please see README.md
+description:         Please see README.org
 homepage:            http://github.com/mnick/hsparse#readme
 license:             BSD3
 license-file:        LICENSE
