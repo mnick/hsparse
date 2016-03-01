@@ -2,3 +2,25 @@
 **** Haskell library for sparse vector and matrix operations
 
 This library supports operations such as dot products, matrix products between sparse vectors and matrices.
+
+Dimensions of matrices and vectors are strongly typed
+
+#+BEGIN_SRC haskell
+  > import Numeric.LinearAlgebra.Sparse.Matrix as M
+  > import Numeric.LinearAlgebra.Sparse.Vector as V
+
+  > let m  = M.empty :: SparseMatrix 10 6 Double
+  > let v  = V.empty :: SparseVector 7 Double
+
+  > v <> v
+  0.0
+
+  > m |> v
+
+  <interactive>:36:6-7:
+      Couldn't match type ‘7’ with ‘6’
+      Expected type: SparseVector 6 Double
+        Actual type: SparseVector 7 Double
+      In the second argument of ‘(|>)’, namely ‘v’
+      In the expression: m |> v
+#+END_SRC
