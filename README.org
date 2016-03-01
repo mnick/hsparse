@@ -32,7 +32,7 @@ Dimensions of matrices and vectors are strongly typed:
 
 Internally the sparse matrices and vectors are efficiently represented via ~Data.IntMap~.
 
-=hsparse= is closely related to the great [sparse-lin-alg](https://github.com/laughedelic/sparse-lin-alg) and builds on it's ideas and code. Important differences include 
+=hsparse= is closely related to the great [[https://github.com/laughedelic/sparse-lin-alg][sparse-lin-alg]] and builds on it's ideas and code. Important differences include 
 
 - Strongly typed dimensions
 - Zero values are never explicitly created (=hsparse= uses ~Maybe~ for zero values, =sparse-lin-alg= filters them afterwards.)
