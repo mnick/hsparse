@@ -33,8 +33,8 @@ unsafeDiag ds = L.foldl build empty ids
     ids = L.zip ([1..length ds] :: [Int]) ds
     build m (i, v) = ins m ((i,i), v)
 
-fromAssocList :: (Num a, Eq a, DIM r, DIM c) => [((Int, Int), a)] -> SparseMatrix r c a
-fromAssocList = L.foldl' ins empty
+fromList :: (Num a, Eq a, DIM r, DIM c) => [((Int, Int), a)] -> SparseMatrix r c a
+fromList = L.foldl' ins empty
 
 add :: (Eq a, Num a, DIM n, DIM m) => SparseMatrix m n a -> SparseMatrix m n a -> SparseMatrix m n a
 add (SM x) (SM y) = SM $ M.unionWith (+) x y
@@ -59,7 +59,7 @@ modifyRow mx f i = SM $ M.insert i r' (mat mx)
 
 -- | Delete a single element from the matrix
 del :: (Num a, DIM r, DIM c) => SparseMatrix r c a -> (Int, Int) -> SparseMatrix r c a
-del mx (i,j) = modifyRow mx (\r -> V.del r j) i
+del mx (i,j) = modifyRow mx (`V.del` j) i
 
 -- | Delete a row from the matrix
 delRow :: (Num a, DIM r, DIM c) => SparseMatrix r c a -> Int -> SparseMatrix r c a
