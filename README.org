@@ -3,19 +3,19 @@
 
 This library supports operations such as dot products, matrix products between sparse vectors and matrices.
 
-Dimensions of matrices and vectors are strongly typed
+Dimensions of matrices and vectors are strongly typed:
 
 #+BEGIN_SRC haskell
-  > import Numeric.LinearAlgebra.Sparse.Matrix as M
-  > import Numeric.LinearAlgebra.Sparse.Vector as V
+  λ> import Numeric.LinearAlgebra.Sparse.Matrix as M
+  λ> import Numeric.LinearAlgebra.Sparse.Vector as V
 
-  > let m  = M.empty :: SparseMatrix 10 6 Double
-  > let v  = V.empty :: SparseVector 7 Double
+  λ> let m = M.empty :: SparseMatrix 10 6 Double
+  λ> let v = V.fromAssocList [(1,2), (4,3.5)] :: SparseVector 7 Double
 
-  > v <> v
-  0.0
+  λ> v <> v
+  16.25
 
-  > m |> v
+  λ> m |> v
 
   <interactive>:36:6-7:
       Couldn't match type ‘7’ with ‘6’
