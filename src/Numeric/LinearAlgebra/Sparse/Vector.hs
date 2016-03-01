@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE KindSignatures       #-}
@@ -49,6 +50,16 @@ spDot (SV v) (SV w) = case M.foldl' (+) 0 $ M.intersectionWith (*) v w of
   0 -> Nothing
   x -> Just x
 
+checkDim :: forall n a. (DIM n) => Index -> SparseVector n a -> SparseVector n a
+checkDim i v | i < 1 || i > d = error $ "Index out of bounds (" ++ show i ++ " not in (1," ++ show d ++ "))"
+             | otherwise = v
+   where
+     d = natInt (Proxy :: Proxy n)
+
+checkDim' :: Index -> (Index, a) -> (Index, a)
+checkDim' d (i, v) | i < 1 || i > d = error $ "Index out of bounds (" ++ show i ++ " not in (1," ++ show d ++ "))"
+                   | otherwise = (i, v)
+
 empty :: forall a n. (DIM n, Num a) => SparseVector n a
 empty = SV M.empty
 
@@ -69,29 +80,31 @@ append (SV x) (SV y) = SV (M.union x (shiftKeys s y))
   where
     s = natInt (Proxy :: Proxy n)
 
-toAssocListWithSize :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> (Int, [(Index, a)])
-toAssocListWithSize (SV v) = (natInt (Proxy :: Proxy n), M.toAscList v)
+toListWithSize :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> (Int, [(Index, a)])
+toListWithSize (SV v) = (natInt (Proxy :: Proxy n), M.toList v)
 
-toAssocList :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> [(Index, a)]
-toAssocList = snd . toAssocListWithSize
+toList :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> [(Index, a)]
+toList = snd . toListWithSize
 
-fromAssocList :: (Num a, Eq a, DIM n) => [(Index, a)] -> SparseVector n a
-fromAssocList l = SV (M.fromAscList l)
+fromList :: forall n a. (Num a, Eq a, DIM n) => [(Index, a)] -> SparseVector n a
+fromList ivs = SV (M.fromList $ map (checkDim' d) ivs)
+   where
+     d = natInt (Proxy :: Proxy n)
 
 -- Modifications
 del :: (Num a, DIM n) => SparseVector n a -> Index -> SparseVector n a
-del (SV v) i = SV (M.delete i v)
+del v i = SV (M.delete i (vec $ checkDim i v))
 
 del' :: (Num a, DIM n) => SparseVector n a -> Index -> Maybe (SparseVector n a)
-del' (SV v) i = case M.size v' of
+del' v i = case M.size v' of
                   0 -> Nothing
                   otherwise -> Just (SV v')
   where
-    v' = M.delete i v
+    v' = M.delete i $ vec (checkDim i v)
 
 ins :: (Eq a, Num a, DIM n) => SparseVector n a -> (Index, a) -> SparseVector n a
-ins v (i, 0) = del v i
-ins (SV v) (i, x) = SV (M.insert i x v)
+ins v (i, 0) = del (checkDim i v) i
+ins v (i, x) = SV (M.insert i x $ vec (checkDim i v))
 
 dot :: (Eq a, Num a, DIM n) => SparseVector n a -> SparseVector n a -> a
 dot x y = fromMaybe 0 (spDot x y)
