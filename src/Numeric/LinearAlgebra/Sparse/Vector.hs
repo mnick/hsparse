@@ -44,6 +44,9 @@ instance (Eq a, Num a, DIM n) => Num (SparseVector n a) where
 instance (Show a, Eq a, Num a, DIM n) => Show (SparseVector n a) where
   show (SV v) = show (natInt (Proxy :: Proxy n)) ++ ": " ++ show v
 
+null :: (DIM n) => SparseVector n a -> Bool
+null (SV v) = M.null v
+
 -- | Dot product of two `IntMap`s (for internal use)
 spDot :: (Num a, Eq a, DIM n) => SparseVector n a -> SparseVector n a -> Maybe a
 spDot (SV v) (SV w) = case M.foldl' (+) 0 $ M.intersectionWith (*) v w of
@@ -106,8 +109,17 @@ ins :: (Eq a, Num a, DIM n) => SparseVector n a -> (Index, a) -> SparseVector n 
 ins v (i, 0) = del (checkDim i v) i
 ins v (i, x) = SV (M.insert i x $ vec (checkDim i v))
 
+-- | Scale sparse vector by a scalar a * v
+scale :: (Num a, DIM n) => a -> SparseVector n a -> SparseVector n a
+scale c = fmap (* c)
+
+-- | Inner (dot) product of two sparse vectors <x,y>
 dot :: (Eq a, Num a, DIM n) => SparseVector n a -> SparseVector n a -> a
 dot x y = fromMaybe 0 (spDot x y)
 
 (<>) :: (Eq a, Num a, DIM n) => SparseVector n a -> SparseVector n a -> a
 x <> y = dot x y
+
+-- | l2 norm of vector
+norm :: (Eq a, Num a, Floating a, DIM n) => SparseVector n a -> a
+norm v = sqrt $ F.foldl' (+) 0 $ fmap (^ (2::Int)) v
