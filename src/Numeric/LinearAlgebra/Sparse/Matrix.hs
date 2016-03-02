@@ -24,6 +24,12 @@ instance (DIM n, DIM m) => Functor (SparseMatrix m n) where
 empty :: (DIM r, DIM c) => SparseMatrix r c a
 empty = SM M.empty
 
+null :: (DIM r, DIM c) => SparseMatrix r c a -> Bool
+null (SM m) = M.null m
+
+nnz :: (DIM r, DIM c) => SparseMatrix r c a -> Int
+nnz (SM m) = sum . M.elems $ M.map V.nnz m
+
 -- diag :: (Num a, Eq a, DIM m, DIM n) -> [a] -> Maybe (SparseMatrix m n)
 -- diag ds = case r == c && length a == r of
 
@@ -75,6 +81,10 @@ ins :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> ((Int, Int), a) -> S
 ins m (idx, 0) = del m idx
 ins m ((i,j), x) = modifyRow m (\r -> V.ins r (j, x)) i
 
+insertRow :: (Eq a, Num a, DIM r, DIM c) => SparseVector c a -> Index -> SparseMatrix r c a -> SparseMatrix r c a
+insertRow v i m | V.null v  = delRow m i
+                | otherwise = m {mat = M.insert i v (mat m)}
+
 -- | Matrix transposition (rows become columns)
 trans :: (Num a, Eq a, DIM r, DIM c) => SparseMatrix r c a -> SparseMatrix c r a
 trans m = M.foldlWithKey' transRow empty (mat m)
@@ -89,11 +99,11 @@ spMvMaybe (SM m) v | M.null r = Nothing
   where
         r = M.mapMaybe (V.spDot v) m
 
--- | Sparse matrix vector product.
+-- | Sparse matrix-vector product.
 multMv :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> SparseVector c a -> SparseVector r a
 multMv (SM m) v = SV (M.mapMaybe (V.spDot v) m)
 
--- | Sparse vector matrix product. Equivalent to
+-- | Sparse vector-matrix product. Equivalent to
 -- > spMv (trans m) v
 multVm :: (Eq a, Num a, DIM r, DIM c) => SparseVector r a -> SparseMatrix r c a -> SparseVector c a
 multVm v m = multMv (trans m) v
@@ -104,8 +114,15 @@ multVm v m = multMv (trans m) v
 (<|) :: (Eq a, Num a, DIM r, DIM c) => SparseVector r a -> SparseMatrix r c a -> SparseVector c a
 (<|) = multVm
 
+-- | Sparse matrix-matrix multiplication
 mult :: (Eq a, Num a, DIM r, DIM c1, DIM c2) => SparseMatrix r c1 a -> SparseMatrix c1 c2 a -> SparseMatrix r c2 a
 mult x y = SM $ M.mapMaybe (spMvMaybe (trans y)) (mat x)
 
 (***) :: (Eq a, Num a, DIM r, DIM c1, DIM c2) => SparseMatrix r c1 a -> SparseMatrix c1 c2 a -> SparseMatrix r c2 a
 (***) = mult
+
+-- | Compute Givens rotation of sparse matrix
+givens :: (Eq a, Num a, DIM r, DIM c) => (Index, Index) -> (a, a) -> SparseMatrix r c a -> SparseMatrix r c a
+givens (i,j) (c,s) m = insertRow (rotate j i c (-s)) j $ insertRow (rotate i j c s) i m
+  where
+    rotate i' j' c' s' = V.scale c' (row m i') + V.scale s' (row m j')
