@@ -1,8 +1,9 @@
 * hsparse
 **** Haskell library for sparse vector and matrix operations
 
-=hsparse= supports operations such as dot products, matrix products between sparse vectors and matrices.
-The library is geared towards very efficient operations when /all/ vectors/matrices are sparse, e.g.,
+=hsparse= supports operations such as dot products, matrix products between
+sparse vectors and matrices. The library is geared towards very efficient
+operations when /all/ vectors/matrices are sparse, e.g.,
 
 - Dot products between two sparse vectors.
 - Multiplication of a sparse matrix and sparse vector
@@ -15,7 +16,7 @@ Dimensions of matrices and vectors are strongly typed:
   λ> import Numeric.LinearAlgebra.Sparse.Vector as V
 
   λ> let m = M.empty :: SparseMatrix 10 6 Double
-  λ> let v = V.fromAssocList [(1,2), (4,3.5)] :: SparseVector 7 Double
+  λ> let v = V.fromList [(1,2), (4,3.5)] :: SparseVector 7 Double
 
   λ> v <> v
   16.25
@@ -30,9 +31,11 @@ Dimensions of matrices and vectors are strongly typed:
       In the expression: m |> v
 #+END_SRC
 
-Internally the sparse matrices and vectors are efficiently represented via ~Data.IntMap~.
+Internally the sparse matrices and vectors are efficiently represented via
+~Data.IntMap~.
 
-=hsparse= is closely related to the great [[https://github.com/laughedelic/sparse-lin-alg][sparse-lin-alg]] and builds on it's ideas and code. Important differences include 
+=hsparse= is closely related to the great [[https://github.com/laughedelic/sparse-lin-alg][sparse-lin-alg]] and builds on it's
+ideas and code. Important differences include
 
 - Strongly typed dimensions
 - Zero values are not explicitly created
