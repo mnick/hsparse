@@ -41,3 +41,7 @@ ideas and code. Important differences include
 - Zero values are not explicitly created
   - =hsparse= uses ~Maybe~ for zero values
   - =sparse-lin-alg= filters zeros afterwards
+- Additional operations
+  - scaling, norm of vectors
+  - Givens rotation of matrices
+  - ...
