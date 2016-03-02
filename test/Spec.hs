@@ -11,7 +11,7 @@ main :: IO ()
 main = hspec $ do
 
   describe "Sparse.Vector" $ do
-    it "dot product" $ do
+    it "dot" $ do
       let x = V.fromList [(1, 2.0), (4, 3.0)] :: (SparseVector 10 Double)
       let y = V.fromList [(1, 3.0), (6, 3.0)] :: (SparseVector 10 Double)
       let z = V.fromList [(2, 3.0), (6, 3.0)] :: (SparseVector 10 Double)
@@ -30,6 +30,20 @@ main = hspec $ do
       x == y       `shouldBe` False
       x == z       `shouldBe` False
       x == V.empty `shouldBe` False
+
+    it "scale" $ do
+       let x  = V.fromList [(1, 2.0), (4, 3.0)] :: (SparseVector 10 Double)
+       let y  = V.fromList [(1, 1.0), (4, 1.5)] :: (SparseVector 10 Double)
+
+       V.scale 0.5 x `shouldBe` y
+       V.scale 1 x   `shouldBe` x
+       V.scale 0 x   `shouldBe` V.empty
+ 
+    it "norm" $ do
+       let x  = V.fromList [(1,2.0), (2,2.0), (4,1.0)] :: (SparseVector 10 Double)
+
+       V.norm x                                 `shouldBe` 3
+       V.norm (V.empty :: SparseVector 3 Double) `shouldBe` 0
 
   describe "Sparse.Matrix" $ do
     it "equality" $ do
