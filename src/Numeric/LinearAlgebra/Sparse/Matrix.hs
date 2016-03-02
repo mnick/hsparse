@@ -14,7 +14,7 @@ import qualified Numeric.LinearAlgebra.Sparse.Vector   as V
 
 
 newtype SparseMatrix (n :: Nat) (m :: Nat) a = SM {mat :: IntMap (SparseVector m a)}
-                                             deriving (Eq)
+                                             deriving (Eq, Show)
 
 instance (DIM n, DIM m) => Functor (SparseMatrix m n) where
   fmap f mx = mx {mat = fmap (fmap f) (mat mx)}
@@ -82,17 +82,30 @@ trans m = M.foldlWithKey' transRow empty (mat m)
     transRow m' i (SV v) = M.foldlWithKey' (transElem i) m' v
     transElem i m' j v = ins m' ((j,i),v)
 
+
+spMvMaybe :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> SparseVector c a -> Maybe (SparseVector r a)
+spMvMaybe (SM m) v | M.null r = Nothing
+                   | otherwise = Just (SV r)
+  where
+        r = M.mapMaybe (V.spDot v) m
+
 -- | Sparse matrix vector product.
-spMv :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> SparseVector c a -> SparseVector r a
-spMv (SM m) v = SV (M.mapMaybe (V.spDot v) m)
+multMv :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> SparseVector c a -> SparseVector r a
+multMv (SM m) v = SV (M.mapMaybe (V.spDot v) m)
 
 -- | Sparse vector matrix product. Equivalent to
 -- > spMv (trans m) v
-spVm :: (Eq a, Num a, DIM r, DIM c) => SparseVector r a -> SparseMatrix r c a -> SparseVector c a
-spVm v m = spMv (trans m) v
+multVm :: (Eq a, Num a, DIM r, DIM c) => SparseVector r a -> SparseMatrix r c a -> SparseVector c a
+multVm v m = multMv (trans m) v
 
 (|>) :: (Eq a, Num a, DIM r, DIM c) => SparseMatrix r c a -> SparseVector c a -> SparseVector r a
-(|>) = spMv
+(|>) = multMv
 
 (<|) :: (Eq a, Num a, DIM r, DIM c) => SparseVector r a -> SparseMatrix r c a -> SparseVector c a
-(<|) = spVm
+(<|) = multVm
+
+mult :: (Eq a, Num a, DIM r, DIM c1, DIM c2) => SparseMatrix r c1 a -> SparseMatrix c1 c2 a -> SparseMatrix r c2 a
+mult x y = SM $ M.mapMaybe (spMvMaybe (trans y)) (mat x)
+
+(***) :: (Eq a, Num a, DIM r, DIM c1, DIM c2) => SparseMatrix r c1 a -> SparseMatrix c1 c2 a -> SparseMatrix r c2 a
+(***) = mult
