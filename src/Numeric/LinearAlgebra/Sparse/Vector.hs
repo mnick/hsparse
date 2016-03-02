@@ -110,8 +110,10 @@ ins v (i, 0) = del (checkDim i v) i
 ins v (i, x) = SV (M.insert i x $ vec (checkDim i v))
 
 -- | Scale sparse vector by a scalar a * v
-scale :: (Num a, DIM n) => a -> SparseVector n a -> SparseVector n a
-scale c = fmap (* c)
+scale :: forall n a. (Eq a, Num a, DIM n) => a -> SparseVector n a -> SparseVector n a
+scale 0 v = empty
+scale 1 v = v
+scale c v = fmap (* c) v
 
 -- | Inner (dot) product of two sparse vectors <x,y>
 dot :: (Eq a, Num a, DIM n) => SparseVector n a -> SparseVector n a -> a
