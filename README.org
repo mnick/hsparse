@@ -12,8 +12,8 @@ operations when /all/ vectors/matrices are sparse, e.g.,
 Dimensions of matrices and vectors are strongly typed:
 
 #+BEGIN_SRC haskell
-  λ> import Numeric.LinearAlgebra.Sparse.Matrix as M
-  λ> import Numeric.LinearAlgebra.Sparse.Vector as V
+  λ> import Numeric.Sparse.Matrix as M
+  λ> import Numeric.Sparse.Vector as V
 
   λ> let m = M.empty :: SparseMatrix 10 6 Double
   λ> let v = V.fromList [(1,2), (4,3.5)] :: SparseVector 7 Double
