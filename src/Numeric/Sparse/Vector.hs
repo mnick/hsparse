@@ -1,22 +1,22 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE KindSignatures       #-}
+{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE TypeOperators        #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Numeric.LinearAlgebra.Sparse.Vector where
+module Numeric.Sparse.Vector where
 
-import           Data.Foldable as F
-import           Data.IntMap   (IntMap)
-import qualified Data.IntMap   as M hiding ((!))
+import qualified Data.Foldable           as F
+import           Data.IntMap             (IntMap)
+import qualified Data.IntMap             as M hiding ((!))
 import           Data.Maybe
 import           Data.Proxy
 import           GHC.TypeLits
-import Numeric.LinearAlgebra.Sparse.Internal
+import           Numeric.Sparse.Internal
 
 
 data SparseVector (n :: Nat) a = SV {vec :: !(IntMap a)}
@@ -33,13 +33,9 @@ instance (Eq a, Num a, DIM n) => Num (SparseVector n a) where
   (*)           = intersectWith (*)
   negate        = fmap negate
   fromInteger 0 = empty
-  fromInteger x = singleton (fromInteger x)
+  fromInteger x = singleton 1 (fromInteger x)
   abs           = fmap abs
   signum        = fmap signum
-
--- instance (DIM n, Num a) => Monoid (SparseVector n a) where
---   mempty = empty
---   mappend = append
 
 instance (Show a, Eq a, Num a, DIM n) => Show (SparseVector n a) where
   show (SV v) = show (natInt (Proxy :: Proxy n)) ++ ": " ++ show v
@@ -69,8 +65,8 @@ empty = SV M.empty
 nnz :: (DIM n) => SparseVector n a -> Int
 nnz (SV v) = M.size v
 
-singleton :: (DIM n) => a -> SparseVector n a
-singleton x = SV (M.singleton 1 x)
+singleton :: (DIM n) => Index -> a -> SparseVector n a
+singleton i x = SV (M.singleton i x)
 
 unionWith :: (Eq a, Num a, DIM n) => (a -> a -> a) -> SparseVector n a -> SparseVector n a -> SparseVector n a
 unionWith f (SV x) (SV y) = SV $ M.filter (/= 0) (M.unionWith f x y)
@@ -83,10 +79,12 @@ append (SV x) (SV y) = SV (M.union x (shiftKeys s y))
   where
     s = natInt (Proxy :: Proxy n)
 
+-- Serialization --------------------------------------------------------------
+
 toListWithSize :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> (Int, [(Index, a)])
 toListWithSize (SV v) = (natInt (Proxy :: Proxy n), M.toList v)
 
-toList :: forall n a. (Num a, Eq a, DIM n) => SparseVector n a -> [(Index, a)]
+toList :: (Num a, Eq a, DIM n) => SparseVector n a -> [(Index, a)]
 toList = snd . toListWithSize
 
 fromList :: forall n a. (Num a, Eq a, DIM n) => [(Index, a)] -> SparseVector n a
@@ -94,7 +92,8 @@ fromList ivs = SV (M.fromList $ map (checkDim' d) ivs)
    where
      d = natInt (Proxy :: Proxy n)
 
--- Modifications
+-- Modification ---------------------------------------------------------------
+
 del :: (Num a, DIM n) => SparseVector n a -> Index -> SparseVector n a
 del v i = SV (M.delete i (vec $ checkDim i v))
 
@@ -108,6 +107,8 @@ del' v i = case M.size v' of
 ins :: (Eq a, Num a, DIM n) => SparseVector n a -> (Index, a) -> SparseVector n a
 ins v (i, 0) = del (checkDim i v) i
 ins v (i, x) = SV (M.insert i x $ vec (checkDim i v))
+
+-- Linear Algebra -------------------------------------------------------------
 
 -- | Scale sparse vector by a scalar a * v
 scale :: forall n a. (Eq a, Num a, DIM n) => a -> SparseVector n a -> SparseVector n a

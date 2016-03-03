@@ -2,22 +2,31 @@
 {-# LANGUAGE DataKinds       #-}
 {-# LANGUAGE KindSignatures  #-}
 
-module Numeric.LinearAlgebra.Sparse.Matrix where
+module Numeric.Sparse.Matrix where
 
-import           Data.IntMap.Strict                    (IntMap)
-import qualified Data.IntMap.Strict                    as M
-import qualified Data.List                             as L
+import qualified Data.Foldable           as F
+import           Data.IntMap             (IntMap)
+import qualified Data.IntMap             as M
+import qualified Data.List               as L
 import           GHC.TypeLits
-import           Numeric.LinearAlgebra.Sparse.Internal
-import           Numeric.LinearAlgebra.Sparse.Vector   (SparseVector (SV))
-import qualified Numeric.LinearAlgebra.Sparse.Vector   as V
+import           Numeric.Sparse.Internal
+import           Numeric.Sparse.Vector   (SparseVector (SV))
+import qualified Numeric.Sparse.Vector   as V
 
-
-newtype SparseMatrix (n :: Nat) (m :: Nat) a = SM {mat :: IntMap (SparseVector m a)}
-                                             deriving (Eq, Show)
+data SparseMatrix (n :: Nat) (m :: Nat) a = SM {mat :: !(IntMap (SparseVector m a))}
+                                          deriving (Eq, Show)
 
 instance (DIM n, DIM m) => Functor (SparseMatrix m n) where
   fmap f mx = mx {mat = fmap (fmap f) (mat mx)}
+
+instance (Eq a, Num a, DIM r, DIM c) => Num (SparseMatrix r c a) where
+  (+) (SM x) (SM y) = SM $ M.unionWith (+) x y
+  (*) (SM x) (SM y) = SM $ M.intersectionWith (*) x y
+  negate = fmap negate
+  fromInteger 0 = empty
+  fromInteger x = singleton (1,1) (fromInteger x)
+  abs = fmap abs
+  signum = fmap signum
 
 -- Construction ---------------------------------------------------------------
 
@@ -39,8 +48,14 @@ unsafeDiag ds = L.foldl build empty ids
     ids = L.zip ([1..length ds] :: [Int]) ds
     build m (i, v) = ins m ((i,i), v)
 
+diag :: (Num a, Eq a, DIM n) => SparseVector n a -> SparseMatrix n n a
+diag (SV v) = SM $ M.mapWithKey V.singleton v
+
 fromList :: (Num a, Eq a, DIM r, DIM c) => [((Int, Int), a)] -> SparseMatrix r c a
 fromList = L.foldl' ins empty
+
+singleton :: (Num a, Eq a, DIM r, DIM c) => (Index, Index) -> a -> SparseMatrix r c a
+singleton idx v = fromList [(idx, v)]
 
 add :: (Eq a, Num a, DIM n, DIM m) => SparseMatrix m n a -> SparseMatrix m n a -> SparseMatrix m n a
 add (SM x) (SM y) = SM $ M.unionWith (+) x y
@@ -55,6 +70,13 @@ mapRows f (SM m) = SM $ M.filter (\r -> V.nnz r /= 0) $ M.map f m
 
 mapRowsMaybe :: (DIM r, DIM c) => (SparseVector c a -> Maybe (SparseVector c a)) -> SparseMatrix r c a -> SparseMatrix r c a
 mapRowsMaybe f (SM m) = SM $ M.mapMaybe f m
+
+-- Fold
+foldCols :: (DIM r, DIM c) => (b -> a -> b) -> b -> SparseMatrix r c a -> SparseVector r b
+foldCols f x m = SV $ M.map (F.foldl' f x) (mat m)
+
+foldRows :: (DIM r, DIM c, Eq a, Num a) => (b -> a -> b) -> b -> SparseMatrix r c a -> SparseVector c b
+foldRows f x m = foldCols f x (trans m)
 
 -- Modification ---------------------------------------------------------------
 

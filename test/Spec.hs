@@ -2,10 +2,10 @@
 
 import Test.Hspec
 import Test.QuickCheck
-import Numeric.LinearAlgebra.Sparse.Vector (SparseVector, (<>))
-import Numeric.LinearAlgebra.Sparse.Matrix (SparseMatrix, (|>), (<|), (***))
-import qualified Numeric.LinearAlgebra.Sparse.Vector as V
-import qualified Numeric.LinearAlgebra.Sparse.Matrix as M
+import Numeric.Sparse.Vector (SparseVector, (<>))
+import Numeric.Sparse.Matrix (SparseMatrix, (|>), (<|), (***))
+import qualified Numeric.Sparse.Vector as V
+import qualified Numeric.Sparse.Matrix as M
 
 main :: IO ()
 main = hspec $ do
