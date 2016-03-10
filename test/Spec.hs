@@ -2,8 +2,9 @@
 
 import Test.Hspec
 import Test.QuickCheck
-import Numeric.Sparse.Vector (SparseVector, (<>))
-import Numeric.Sparse.Matrix (SparseMatrix, (|>), (<|), (***))
+import Numeric.Sparse (SparseVector, SparseMatrix)
+import Numeric.Sparse.Vector ((<>))
+import Numeric.Sparse.Matrix ((|>), (<|), (***))
 import qualified Numeric.Sparse.Vector as V
 import qualified Numeric.Sparse.Matrix as M
 

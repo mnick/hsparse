@@ -1,32 +1,16 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE KindSignatures       #-}
-{-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
 
 module Numeric.Sparse.Vector where
 
-import qualified Data.Foldable           as F
 import           Data.IntMap             (IntMap)
 import qualified Data.IntMap             as M hiding ((!))
 import           Data.Maybe
 import           Data.Proxy
 import           GHC.TypeLits
 import           Numeric.Sparse.Internal
-
-
-data SparseVector (n :: Nat) a = SV {vec :: !(IntMap a)}
-                                  deriving (Eq, Read)
-
-instance (DIM n) => Functor (SparseVector n) where
-  fmap f v = v {vec = fmap f (vec v)}
-
-instance (DIM n) => Foldable (SparseVector n) where
-  foldr f d v = F.foldr f d (vec v)
+import           Numeric.Sparse.Types
 
 instance (Eq a, Num a, DIM n) => Num (SparseVector n a) where
   (+)           = unionWith (+)
@@ -36,9 +20,6 @@ instance (Eq a, Num a, DIM n) => Num (SparseVector n a) where
   fromInteger x = singleton 1 (fromInteger x)
   abs           = fmap abs
   signum        = fmap signum
-
-instance (Show a, Eq a, Num a, DIM n) => Show (SparseVector n a) where
-  show (SV v) = show (natInt (Proxy :: Proxy n)) ++ ": " ++ show v
 
 null :: (DIM n) => SparseVector n a -> Bool
 null (SV v) = M.null v
@@ -125,9 +106,8 @@ x <> y = dot x y
 
 -- | l2 norm of vector
 norm :: (Eq a, Num a, Floating a, DIM n) => SparseVector n a -> a
-norm v = sqrt $ F.foldl' (+) 0 $ fmap (^ (2::Int)) v
+norm v = sqrt $ foldl (+) 0 $ fmap (^ (2::Int)) v
 
--- TODO return SparseMatrix (fix recursive module dependency)
 -- | Outer product
-outer :: (Eq a, Num a, DIM n, DIM m) => SparseVector n a -> SparseVector m a -> IntMap (SparseVector m a)
-outer (SV x) v = M.map (`scale` v) x
+outer :: (Eq a, Num a, DIM n, DIM m) => SparseVector n a -> SparseVector m a -> SparseMatrix n m a
+outer (SV x) v = SM $ M.map (`scale` v) x

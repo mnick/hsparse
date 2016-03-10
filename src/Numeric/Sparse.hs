@@ -5,6 +5,9 @@ module Numeric.Sparse
 , SparseMatrix
 ) where
 
-import Numeric.Sparse.Vector
-import Numeric.Sparse.Matrix
+import Numeric.Sparse.Types
+-- import instances from SparseVector
+import Numeric.Sparse.Vector ()
+-- import instances for SparseMatrix
+import Numeric.Sparse.Matrix ()
 import Numeric.Sparse.Internal

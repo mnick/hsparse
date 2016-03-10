@@ -1,23 +1,15 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE KindSignatures  #-}
 
 module Numeric.Sparse.Matrix where
 
 import qualified Data.Foldable           as F
-import           Data.IntMap             (IntMap)
 import qualified Data.IntMap             as M
 import qualified Data.List               as L
-import           GHC.TypeLits
+
 import           Numeric.Sparse.Internal
-import           Numeric.Sparse.Vector   (SparseVector (SV))
+import           Numeric.Sparse.Types
 import qualified Numeric.Sparse.Vector   as V
-
-data SparseMatrix (n :: Nat) (m :: Nat) a = SM {mat :: !(IntMap (SparseVector m a))}
-                                          deriving (Eq, Show)
-
-instance (DIM n, DIM m) => Functor (SparseMatrix m n) where
-  fmap f mx = mx {mat = fmap (fmap f) (mat mx)}
 
 instance (Eq a, Num a, DIM r, DIM c) => Num (SparseMatrix r c a) where
   (+) (SM x) (SM y) = SM $ M.unionWith (+) x y
