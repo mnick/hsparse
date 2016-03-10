@@ -90,12 +90,12 @@ del :: (Num a, DIM r, DIM c) => SparseMatrix r c a -> (Int, Int) -> SparseMatrix
 del mx (i,j) = modifyRow mx (`V.del` j) i
 
 -- | Delete a row from the matrix
-delRow :: (Num a, DIM r, DIM c) => SparseMatrix r c a -> Int -> SparseMatrix r c a
-delRow m i = m {mat = M.delete i (mat m)}
+delRow :: (Num a, DIM r, DIM c) => Int -> SparseMatrix r c a -> SparseMatrix r c a
+delRow i m = m {mat = M.delete i (mat m)}
 
 -- | Delete a column from the matrix
-delCol :: (Num a, DIM r, DIM c) => SparseMatrix r c a -> Int -> SparseMatrix r c a
-delCol m j = mapRowsMaybe (`V.del'` j) m
+delCol :: (Num a, DIM r, DIM c) => Int -> SparseMatrix r c a -> SparseMatrix r c a
+delCol j = mapRowsMaybe (`V.del'` j)
 
 -- | Insert new element into the matrix. If present, old elements are overwritten.
 --   If a zero value is inserted, this element is deleted.
@@ -104,7 +104,7 @@ ins m (idx, 0) = del m idx
 ins m ((i,j), x) = modifyRow m (\r -> V.ins r (j, x)) i
 
 insertRow :: (Eq a, Num a, DIM r, DIM c) => SparseVector c a -> Index -> SparseMatrix r c a -> SparseMatrix r c a
-insertRow v i m | V.null v  = delRow m i
+insertRow v i m | V.null v  = delRow i m
                 | otherwise = m {mat = M.insert i v (mat m)}
 
 -- | Matrix transposition (rows become columns)
