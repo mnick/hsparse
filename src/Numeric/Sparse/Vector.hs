@@ -126,3 +126,8 @@ x <> y = dot x y
 -- | l2 norm of vector
 norm :: (Eq a, Num a, Floating a, DIM n) => SparseVector n a -> a
 norm v = sqrt $ F.foldl' (+) 0 $ fmap (^ (2::Int)) v
+
+-- TODO return SparseMatrix (fix recursive module dependency)
+-- | Outer product
+outer :: (Eq a, Num a, DIM n, DIM m) => SparseVector n a -> SparseVector m a -> IntMap (SparseVector m a)
+outer (SV x) v = M.map (`scale` v) x
