@@ -4,7 +4,6 @@
 
 module Numeric.Sparse.Vector where
 
-import           Data.IntMap             (IntMap)
 import qualified Data.IntMap             as M hiding ((!))
 import           Data.Maybe
 import           Data.Proxy
@@ -106,8 +105,11 @@ x <> y = dot x y
 
 -- | l2 norm of vector
 norm :: (Eq a, Num a, Floating a, DIM n) => SparseVector n a -> a
-norm v = sqrt $ foldl (+) 0 $ fmap (^ (2::Int)) v
+norm v = sqrt $ sum $ fmap (^ (2::Int)) v
 
 -- | Outer product
 outer :: (Eq a, Num a, DIM n, DIM m) => SparseVector n a -> SparseVector m a -> SparseMatrix n m a
 outer (SV x) v = SM $ M.map (`scale` v) x
+
+(><) :: (Eq a, Num a, DIM n, DIM m) => SparseVector n a -> SparseVector m a -> SparseMatrix n m a
+x >< y = outer x y
