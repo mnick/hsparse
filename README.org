@@ -12,6 +12,7 @@ operations when /all/ vectors/matrices are sparse, e.g.,
 Dimensions of matrices and vectors are strongly typed:
 
 #+BEGIN_SRC haskell
+  λ> import Numeric.Sparse
   λ> import Numeric.Sparse.Matrix as M
   λ> import Numeric.Sparse.Vector as V
 
